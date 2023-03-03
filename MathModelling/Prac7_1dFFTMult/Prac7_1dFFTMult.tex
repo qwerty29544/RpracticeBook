@@ -1,0 +1,142 @@
+% Options for packages loaded elsewhere
+\PassOptionsToPackage{unicode}{hyperref}
+\PassOptionsToPackage{hyphens}{url}
+%
+\documentclass[
+]{article}
+\usepackage{amsmath,amssymb}
+\usepackage{lmodern}
+\usepackage{iftex}
+\ifPDFTeX
+  \usepackage[T1]{fontenc}
+  \usepackage[utf8]{inputenc}
+  \usepackage{textcomp} % provide euro and other symbols
+\else % if luatex or xetex
+  \usepackage{unicode-math}
+  \defaultfontfeatures{Scale=MatchLowercase}
+  \defaultfontfeatures[\rmfamily]{Ligatures=TeX,Scale=1}
+  \setmainfont[]{SourceSansPro}
+\fi
+% Use upquote if available, for straight quotes in verbatim environments
+\IfFileExists{upquote.sty}{\usepackage{upquote}}{}
+\IfFileExists{microtype.sty}{% use microtype if available
+  \usepackage[]{microtype}
+  \UseMicrotypeSet[protrusion]{basicmath} % disable protrusion for tt fonts
+}{}
+\makeatletter
+\@ifundefined{KOMAClassName}{% if non-KOMA class
+  \IfFileExists{parskip.sty}{%
+    \usepackage{parskip}
+  }{% else
+    \setlength{\parindent}{0pt}
+    \setlength{\parskip}{6pt plus 2pt minus 1pt}}
+}{% if KOMA class
+  \KOMAoptions{parskip=half}}
+\makeatother
+\usepackage{xcolor}
+\usepackage[margin=1in]{geometry}
+\usepackage{graphicx}
+\makeatletter
+\def\maxwidth{\ifdim\Gin@nat@width>\linewidth\linewidth\else\Gin@nat@width\fi}
+\def\maxheight{\ifdim\Gin@nat@height>\textheight\textheight\else\Gin@nat@height\fi}
+\makeatother
+% Scale images if necessary, so that they will not overflow the page
+% margins by default, and it is still possible to overwrite the defaults
+% using explicit options in \includegraphics[width, height, ...]{}
+\setkeys{Gin}{width=\maxwidth,height=\maxheight,keepaspectratio}
+% Set default figure placement to htbp
+\makeatletter
+\def\fps@figure{htbp}
+\makeatother
+\setlength{\emergencystretch}{3em} % prevent overfull lines
+\providecommand{\tightlist}{%
+  \setlength{\itemsep}{0pt}\setlength{\parskip}{0pt}}
+\setcounter{secnumdepth}{-\maxdimen} % remove section numbering
+\ifLuaTeX
+  \usepackage{selnolig}  % disable illegal ligatures
+\fi
+\IfFileExists{bookmark.sty}{\usepackage{bookmark}}{\usepackage{hyperref}}
+\IfFileExists{xurl.sty}{\usepackage{xurl}}{} % add URL line breaks if available
+\urlstyle{same} % disable monospaced font for URLs
+\hypersetup{
+  pdftitle={Практическая работа №7. Быстрое умножение теплицевой и циркулянтной матрицы на вектор},
+  hidelinks,
+  pdfcreator={LaTeX via pandoc}}
+
+\title{Практическая работа №7. Быстрое умножение теплицевой и
+циркулянтной матрицы на вектор}
+\author{}
+\date{\vspace{-2.5em}2022-11-25}
+
+\begin{document}
+\maketitle
+
+\hypertarget{ux446ux438ux440ux43aux443ux43bux44fux442ux43dux430ux44f-ux43cux430ux442ux440ux438ux446ux430}{%
+\section{\texorpdfstring{\textbf{Циркулятная
+матрица}}{Циркулятная матрица}}\label{ux446ux438ux440ux43aux443ux43bux44fux442ux43dux430ux44f-ux43cux430ux442ux440ux438ux446ux430}}
+
+Циркулянтная матрица - вид матрицы, получающеся в результате смещения
+влево первой строки матрицы на один элемент с переносом крайнего
+элемента на первую позицию справа в вектор-строке матрицы A.
+Итерационный перенос всей строки в рамках матрицы для каждой строки дает
+нам возможность строить циркулянтную матрицу:
+
+\[
+A^{CIRC} = \begin{pmatrix} a_0 & a_1 & a_2 & \dots & a_{n-1} \\
+a_{n-1} & a_0 & a_1 & \dots & a_{n-2} \\ 
+a_{n-2} & a_{n-1} & a_0 & \dots & a_{n-3} \\
+\vdots & \vdots & \vdots & \ddots & \vdots \\
+a_1 & a_2 & a_3 & \dots & a_{0}
+\end{pmatrix}
+\]
+
+Данная матрица обладает свойством периодичности, в результате которой
+имеется несколько новых возможностей:
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\item
+  Не хранить матрицу полностью в памяти комптьютера, а получать её
+  генератором, посредством повторного переноса первой строки.
+\item
+  Умножать такую матрицу на вектор не за \(O(n^2)\), а за
+  \(O(n\cdot log_2(n)\) операций с помощью быстрого преобразования
+  Фурье.
+\end{enumerate}
+
+Во втором случае имеет место следующее равенство:
+
+\[
+A^{CIRC} \ @ \ u = f,\quad F^{-1}\left[\ F[A^{CIRC}_{0}] \cdot F[u]\ \right] \approx f,
+\] где \(F[\cdot]\ -\) быстрое преобразование Фурье входного вектора,
+\(F^{-1}[\cdot]\ -\) быстрое обратное преобразование Фурье входного
+вектора, \(A \ @ \ b\ -\) матричное умножение матрицы на вектор по
+правилам линейной алгебры, \(a \cdot b\ -\) поэлементное умножения
+векторов, \(A^{CIRC}_{0}\ -\) первая строка циркулянтной матрицы
+\(A^{CIRC}\).
+
+Полученные выше выражения для умножения матрицы на вектор являеются
+идентичными с точностью до ошибок округления компьютерной арифметики и
+второй способ является эффективным методом умножения циркулянтной
+матрицы на вектор за короткое время.
+
+\hypertarget{ux442ux435ux43fux43bux438ux446ux435ux432ux430-ux43cux430ux442ux440ux438ux446ux430}{%
+\section{\texorpdfstring{\textbf{Теплицева
+матрица}}{Теплицева матрица}}\label{ux442ux435ux43fux43bux438ux446ux435ux432ux430-ux43cux430ux442ux440ux438ux446ux430}}
+
+\[
+A^{TOEPL} = 
+\begin{pmatrix} 
+a_0 & a_1 & a_2 & \dots & a_{n-1} \\
+a_{-1} & a_0 & a_1 & \dots & a_{n-2} \\ 
+a_{-2} & a_{-1} & a_0 & \dots & a_{n-3} \\
+\vdots & \vdots & \vdots & \ddots & \vdots \\
+a_{-n+1} & a_{-n+2} & a_{-n+3} & \dots & a_{0}
+\end{pmatrix}
+\]
+
+\hypertarget{ux43fux43eux441ux442ux430ux43dux43eux432ux43aux430-ux437ux430ux434ux430ux447ux438}{%
+\section{\texorpdfstring{\textbf{Постановка
+задачи}}{Постановка задачи}}\label{ux43fux43eux441ux442ux430ux43dux43eux432ux43aux430-ux437ux430ux434ux430ux447ux438}}
+
+\end{document}
