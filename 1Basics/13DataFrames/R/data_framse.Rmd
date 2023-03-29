@@ -1,0 +1,164 @@
+---
+title: "data_frames"
+output: 
+  html_document: 
+    highlight: textmate
+    theme: yeti
+date: "2023-03-10"
+---
+
+```{r, include=FALSE}
+knitr::opts_chunk$set(
+    dpi = 120, 
+    results = "hold", 
+    fig.align = "center", 
+    out.width = "75%", 
+    fig.width = 8, 
+    fig.height = 8
+    )
+```
+
+## **Загрузка и предпросмотр фрейма данных**
+
+
+Для загрузки набора данных в R требуется использовать функцию **read** с любым постфиксом. Примером для загрузки набора данных из файла с расширением ".csv" служит следующий код:
+
+```{r}
+# Путь до файла в интернете
+csv_url <-  "https://raw.githubusercontent.com/qwerty29544/RpracticeBook/master/2Data/01FlatTables/GAZ.csv"
+
+df_csv <- read.csv(
+    file=csv_url,           # Что читаем 
+    header = TRUE,          # Заголовки в первой строке
+    sep = "\t",             # Разделитель столбцов
+    dec = ",",              # Десятичный разделитель
+    encoding = "UTF-8",     # Кодировка
+    skipNul = FALSE         # Должны ли пропускаться записи со значениями NULL
+    )
+```
+
+Просмотрим первые записи таблицы данных для убеждения в корректном импорте данных
+
+```{r}
+head(df_csv)
+```
+
+
+Можем просмотреть структуру таблицы для того, чтобы прсомотреть импортированные типы данных в столбцах, а также размерность таблицы данных.
+
+```{r}
+str(df_csv)
+```
+
+Видим, что даты (дата.замера) импротированы как строки, что некорректно и не дает возможности работать с датами на полную. Также для категориальных значений в R разработан специальный тип данных **factor** который также добавляет возможности функционала обработки. Сделаем предобработку дат:
+
+```{r}
+is.character(df_csv$дата.замера)
+```
+
+
+```{r}
+# df_csv$`даты` <- as.Date.character(df_csv$дата.замера, 
+#                                    format = "%d/%m/%Y")
+```
+
+
+```{r}
+df_csv <- transform.data.frame(
+    `_data` = df_csv, 
+    `дата.замера` = as.Date.character(`дата.замера`, format = "%d/%m/%Y"),
+    `ID` = as.factor(`ID`),
+    `Куст` = as.factor(`Куст`),
+    `Группа` = as.factor(`Группа`)
+    )
+
+df_csv <- transform.data.frame(
+    `_data` = df_csv,
+    days_of_date = weekdays(`дата.замера`, abbreviate = T)
+)
+
+
+str(df_csv)
+```
+
+
+## DPLYR и конвеер в R
+
+
+```{r}
+lib = "lubridate"
+if (!(lib %in% installed.packages())) {
+    install.packages(lib)
+}
+```
+
+
+```{r}
+library(dplyr)
+```
+```{r}
+print("hello world")
+"hello world" %>% print()
+```
+### Выборка столбцов
+
+```{r}
+df_csv %>% 
+    dplyr::select(`дата.замера`, `Ртр.МПа`)
+
+# Соханение результата
+new_df <- df_csv %>% 
+    dplyr::select(-`дата.замера`)
+```
+
+### Вычисления
+
+```{r}
+new_df <- df_csv %>% 
+    dplyr::mutate(div_gaz_cond = `газ.м3.сут` / `конд.т.м3.сут`,
+                  div_gaz_water = `газ.м3.сут` / `вода.м3.сут`,
+                  nrows = n())
+
+new_df    
+```
+
+### Фильтрация
+
+```{r}
+df_csv %>% 
+    dplyr::filter(`дата.замера` > as.Date.character("2016-01-01") &
+                      `Туст..С` > 60 |
+                      `конд.т.м3.сут` < 1.0) %>% 
+    dplyr::filter(dplyr::row_number() > 90)
+```
+
+### Группировка данных
+
+```{r}
+df_csv <- na.omit(df_csv)
+df_csv %>% 
+    dplyr::group_by(Группа) %>% 
+    dplyr::summarise(avg_sum = sum(газ.м3.сут),
+                     mean_gaz = mean(газ.м3.сут),
+                     mean_cond = mean(конд.т.м3.сут))
+
+```
+
+
+
+### Сортировка
+
+```{r}
+
+
+df_csv %>% 
+    dplyr::group_by(ID, Куст, Группа) %>%
+    dplyr::summarise(sum_gaz = sum(газ.м3.сут)) %>% 
+    dplyr::arrange(dplyr::desc(sum_gaz))
+
+df_csv %>% 
+    dplyr::group_by(ID, Куст, Группа) %>%
+    dplyr::summarise(sum_gaz = sum(газ.м3.сут)) %>% 
+    dplyr::arrange(sum_gaz)
+```
+
